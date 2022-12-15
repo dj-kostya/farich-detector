@@ -2,3 +2,5 @@
 .idea
 dataset/*.csv
 dataset/*.root
+.virtual_documents
+.ipynb_checkpoints

@@ -1,3 +1,5 @@
 uproot3
 numpy
 pandas
+matplotlib
+scikit-spatial
