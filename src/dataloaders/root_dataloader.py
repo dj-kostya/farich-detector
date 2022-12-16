@@ -4,10 +4,10 @@ import numpy as np
 import pandas as pd
 import uproot3 as uproot
 
-from src.dataloaders import BaseDataloader
+from src.dataloaders import IDataloader
 
 
-class RootDataLoader(BaseDataloader):
+class RootDataLoader(IDataloader):
     root_path: Path
 
     # Данные о частице (для переименования и сохранения)
