@@ -11,7 +11,7 @@ class NoiseDataLoader(RootDataLoader):
     def __init__(self, root_path: Path or str,
                  verbose: bool = True,
                  noise_freq_per_sqmm: float = 2e6,
-                 noise_time_range: tuple = (0, 5),
+                 noise_time_range: tuple = (0, 7),
                  shift_signal_times: bool = True,
                  only_hits: bool = False):
         super().__init__(root_path, verbose=verbose)

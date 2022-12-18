@@ -1,11 +1,11 @@
 import numpy as np
 from skspatial.objects import Plane
-from collections.abc import Callable
+# from collections.abc import Callable
 from typing import Tuple
 
 
 def get_plain_and_transform_by_3_points(point1, point2, point3) -> \
-        Tuple[Plane, Callable[np.ndarray, np.ndarray], Callable[np.ndarray, np.ndarray]]:
+        Tuple[Plane, any, any]:
     """
     Fit plane from three points
     :param point1: Point1
@@ -17,8 +17,18 @@ def get_plain_and_transform_by_3_points(point1, point2, point3) -> \
     InvertedTransform - transform from plane coordinate system to base coordinate system
     """
     p = Plane.from_points(point1, point2, point3)
-    T = np.column_stack((point2 - point1, point3 - point1, p.normal))
+    new_O = (point2 + point1) / 2
+    v1 = point2 - new_O
+    v2 = point3 - new_O
+    v3 = p.normal + new_O
+
+    v1 = v1 / np.linalg.norm(v1)
+    v2 = v2 / np.linalg.norm(v2)
+    v3 = v3 / np.linalg.norm(v3)
+
+    T = np.column_stack((v1, v2, v3))
+    T_inv = np.linalg.inv(T)
     return (p,
-            lambda x: np.linalg.inv().dot(x - point1),
-            lambda x: T.dot(x) + point1
+            lambda x: T_inv.dot((x - new_O).T),
+            lambda x: T.dot(x) + np.array(new_O)
             )

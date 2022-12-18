@@ -33,4 +33,5 @@ class IDataloader(ABC):
         ax.set_zlabel('y')
         ax.set_title('data example')
         plt.legend()
+        return ax
 
