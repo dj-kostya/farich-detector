@@ -18,7 +18,6 @@ class IDataloader(ABC):
 
     @staticmethod
     def plot_solution(df: pd.DataFrame):
-        mpl_use('MacOSX')
         if 'signal' in df:
             sh = df['signal'].to_numpy()
         else:
@@ -35,3 +34,19 @@ class IDataloader(ABC):
         plt.legend()
         return ax
 
+    @staticmethod
+    def plot_xy_solution(df: pd.DataFrame):
+        if 'signal' in df:
+            sh = df['signal'].to_numpy()
+        else:
+            sh = np.ones(len(df['t_c']), bool)
+        plt.figure(figsize=(8, 5), dpi=120)
+        ax = plt.axes()
+        ax.plot(df['x_c'][sh], df['y_c'][sh], 'r.', label='Signal')
+        if not sh.all():
+            ax.plot(df['x_c'][~sh], df['y_c'][~sh], 'k.', label='Noise')
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        ax.set_title('data example')
+        plt.legend()
+        return ax

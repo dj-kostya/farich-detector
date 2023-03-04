@@ -23,6 +23,3 @@ if __name__ == '__main__':
             if idx > 10:
                 break
 
-    # dl.plot_solution(df)
-    # plt.savefig('example.png')
-    # alg.run(dfs[5])
