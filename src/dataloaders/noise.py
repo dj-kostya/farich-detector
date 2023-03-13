@@ -105,6 +105,8 @@ class NoiseDataLoader(RootDataLoader):
         for hit_df, part_df in self.genChunkFromRoot(event_chunk_size=1):
             hit_df = self._add_noise(part_df, hit_df)
             if self.only_hits:
+                hit_df['x_c'], hit_df['y_c'] = zip(
+                    *hit_df[['x_c', 'y_c']].apply(lambda args: self._calculate_coordinates_in_pixel(*args), axis=1))
                 yield hit_df
             else:
                 yield hit_df.join(part_df, on='entry')

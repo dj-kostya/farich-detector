@@ -39,8 +39,39 @@ class RootDataLoader(IDataloader):
         # Определения параметров фотодетектора для генерации темнового шума
 
         nFileEvents = idf.at[0, 'nevents']
+        self.matrix_size = idf.at[0, 'array_size']
+        self.matrix_gap = idf.at[0, 'array_gap']
+        self.matrix_cnt_x = idf.at[0, 'nxarrays']
+        self.matrix_cnt_y = idf.at[0, 'nyarrays']
+        self.pixel_size = idf.at[0, 'pixel_size']
+        self.pixel_gap = idf.at[0, 'pixel_gap']
+        self.pixel_numx = idf.at[0, 'pixel_numx']
+        self.min_x = -self.matrix_cnt_x / 2 * (self.matrix_size + self.matrix_gap) + self.matrix_gap
+        self.min_y = -self.matrix_cnt_y / 2 * (self.matrix_size + self.matrix_gap) + self.matrix_gap
         if self.verbose:
             print(f'Processing ROOT file {self.root_path} with {nFileEvents} simulated events...', flush=True)
+
+    def _calculate_coordinates_in_pixel(self, x, y):
+        x -= self.min_x
+        y -= self.min_y
+
+        def calculate_idx(x_):
+            x_ = x_ / (self.matrix_size + self.matrix_gap)
+            return int(np.ceil(x_))
+
+        def calculate_pixel_in_matrix(x_, matrix_idx):
+            x_ = x_ - (matrix_idx - 1) * (self.matrix_size + self.matrix_gap) + self.matrix_gap
+            return int(np.ceil(x_ / (self.pixel_gap + self.pixel_size)))
+
+        x_matrix = calculate_idx(x)
+        y_matrix = calculate_idx(y)
+
+        x_pixel = calculate_pixel_in_matrix(x, x_matrix)
+        y_pixel = calculate_pixel_in_matrix(y, y_matrix)
+
+        x_result_pixel = (x_matrix - 1) * self.pixel_numx + x_pixel
+        y_result_pixel = (y_matrix - 1) * self.pixel_numx + y_pixel
+        return x_result_pixel, y_result_pixel
 
     def _readInfoFromRoot(self) -> pd.DataFrame:
         '''
