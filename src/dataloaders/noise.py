@@ -74,7 +74,7 @@ class NoiseDataLoader(RootDataLoader):
                               Ndc)  # генерация случайных номеров сработавших каналов с возможным повтором
         xh = self.xgrid[ich]  # x-координата сработавших каналов
         yh = self.ygrid[ich]  # y-координата сработавших каналов
-        zh = hit_df.at[(0, 0), 'z_c']  # z-координата срабатываний (скаляр)
+        zh = hit_df.at[hit_df.index[0], 'z_c']  # z-координата срабатываний (скаляр)
         th = self.rng.uniform(self.noise_time_range[0], self.noise_time_range[1],
                               size=Ndc)  # генерация времён срабатываний по однородному распределению
 
@@ -85,7 +85,6 @@ class NoiseDataLoader(RootDataLoader):
         for i in range(nevents):
             ihit[index:index + noisehits[i]] = signalhits[i] + np.arange(noisehits[i])
             index += noisehits[i]
-
         # создание датафрейма с шумовыми срабатываниями того же формата, что hitdf
         noisedf = pd.DataFrame({'x_c': xh, 'y_c': yh, 'z_c': zh, 't_c': th, 'signal': np.zeros(Ndc, bool)},
                                index=pd.MultiIndex.from_arrays((ievent, ihit), names=('entry', 'subentry')))
@@ -101,12 +100,14 @@ class NoiseDataLoader(RootDataLoader):
 
         return hitdf2
 
-    def __iter__(self):
-        for hit_df, part_df in self.genChunkFromRoot(event_chunk_size=1):
+    def genChunkFromRoot(self, event_chunk_size=2000):
+        for hit_df, part_df in super().genChunkFromRoot(event_chunk_size=event_chunk_size):
             hit_df = self._add_noise(part_df, hit_df)
             if self.only_hits:
-                hit_df['x_c'], hit_df['y_c'] = zip(
-                    *hit_df[['x_c', 'y_c']].apply(lambda args: self._calculate_coordinates_in_pixel(*args), axis=1))
                 yield hit_df
             else:
                 yield hit_df.join(part_df, on='entry')
+
+    def __iter__(self):
+        yield from self.genChunkFromRoot(event_chunk_size=1)
+

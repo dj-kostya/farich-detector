@@ -1,0 +1,15 @@
+version: "2"
+services:
+  pgdb:
+    image: 'postgres:12'
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=farich
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data
+    ports:
+      - "55432:5432"
+

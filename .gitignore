@@ -5,3 +5,5 @@ dataset/*.root
 .virtual_documents
 .ipynb_checkpoints
 tmp/*.png
+pg_data
+.env
