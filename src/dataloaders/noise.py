@@ -90,8 +90,11 @@ class NoiseDataLoader(RootDataLoader):
                                index=pd.MultiIndex.from_arrays((ievent, ihit), names=('entry', 'subentry')))
 
         # TO DO: случайное смещение кольца в фотодетекторе (сдвиг координат сигнальных хитов).
-        # Сложность с реализацией для неравномерной сетки пикселей, т.к. зазоры между матрицами больше зазоров между пикселями в матрице.
-
+        # Сложность с реализацией для неравномерной сетки пикселей,
+        # т.к. зазоры между матрицами больше зазоров между пикселями в матрице.
+        if not noisedf.empty:
+            noisedf['x_c'], noisedf['y_c'] = zip(
+                *noisedf[['x_c', 'y_c']].apply(lambda args: self._calculate_coordinates_in_pixel(*args), axis=1))
         # сливаем сигнальный и шумовой датафрейм и сортируем указатель событий и срабатываний
         hitdf2 = pd.concat((hit_df, noisedf), copy=False).sort_index(level=('entry', 'subentry'))
 
@@ -110,4 +113,3 @@ class NoiseDataLoader(RootDataLoader):
 
     def __iter__(self):
         yield from self.genChunkFromRoot(event_chunk_size=1)
-
