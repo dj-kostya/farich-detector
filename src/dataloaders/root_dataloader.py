@@ -32,15 +32,49 @@ class RootDataLoader(IDataloader):
                        }
 
     def __init__(self, root_path: Path or str, verbose: bool = True):
-        super(RootDataLoader, self).__init__()
+        super(IDataloader, self).__init__()
         self.root_path = Path(root_path)
         self.verbose = verbose
         idf = self._readInfoFromRoot()
         # Определения параметров фотодетектора для генерации темнового шума
 
-        nFileEvents = idf.at[0, 'nevents']
+        self.nFileEvents = idf.at[0, 'nevents']
+        self.matrix_size = idf.at[0, 'array_size']
+        self.matrix_gap = idf.at[0, 'array_gap']
+        self.matrix_cnt_x = idf.at[0, 'nxarrays']
+        self.matrix_cnt_y = idf.at[0, 'nyarrays']
+        self.pixel_size = idf.at[0, 'pixel_size']
+        self.pixel_gap = idf.at[0, 'pixel_gap']
+        self.pixel_numx = idf.at[0, 'pixel_numx']
+        self.min_x = -self.matrix_cnt_x / 2 * (self.matrix_size + self.matrix_gap) + self.matrix_gap
+        self.min_y = -self.matrix_cnt_y / 2 * (self.matrix_size + self.matrix_gap) + self.matrix_gap
         if self.verbose:
-            print(f'Processing ROOT file {self.root_path} with {nFileEvents} simulated events...', flush=True)
+            print(f'Processing ROOT file {self.root_path} with {self.nFileEvents} simulated events...', flush=True)
+
+    def get_total_cnt(self):
+        return self.nFileEvents
+
+    def _calculate_coordinates_in_pixel(self, x, y):
+        x -= self.min_x
+        y -= self.min_y
+
+        def calculate_idx(x_):
+            x_ = x_ / (self.matrix_size + self.matrix_gap)
+            return int(np.ceil(x_))
+
+        def calculate_pixel_in_matrix(x_, matrix_idx):
+            x_ = x_ - (matrix_idx - 1) * (self.matrix_size + self.matrix_gap) + self.matrix_gap
+            return int(np.ceil(x_ / (self.pixel_gap + self.pixel_size)))
+
+        x_matrix = calculate_idx(x)
+        y_matrix = calculate_idx(y)
+
+        x_pixel = calculate_pixel_in_matrix(x, x_matrix)
+        y_pixel = calculate_pixel_in_matrix(y, y_matrix)
+
+        x_result_pixel = (x_matrix - 1) * self.pixel_numx + x_pixel
+        y_result_pixel = (y_matrix - 1) * self.pixel_numx + y_pixel
+        return x_result_pixel, y_result_pixel
 
     def _readInfoFromRoot(self) -> pd.DataFrame:
         '''
@@ -128,7 +162,9 @@ class RootDataLoader(IDataloader):
             hitdf = hitdf.astype('float32', copy=False)
             if self.verbose:
                 print(f'    {hitdf.index.levels[0].size} entries with {hitdf.shape[0]} hits to process')
-
+            if not hitdf.empty:
+                hitdf['x_c'], hitdf['y_c'] = zip(
+                    *hitdf[['x_c', 'y_c']].apply(lambda args: self._calculate_coordinates_in_pixel(*args), axis=1))
             yield hitdf, partdf
 
     def __iter__(self):

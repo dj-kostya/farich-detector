@@ -11,15 +11,9 @@ root_path = dataset_dir / root_file
 
 if __name__ == '__main__':
     dl = PointOnlyDataloader(root_path, verbose=False)
-    alg = EllipseDataFitting(save_graphics=True)
+    alg = EllipseDataFitting(save_graphics=True, eps_proj=1e-2)
     for idx, df in enumerate(dl):
         if idx == 5:
-            centers, vectors = alg.run(df)
-            ax = dl.plot_solution(df)
-            ax.scatter3D(centers, centers, centers, 'g.', label='Center')
-            plt.legend()
-            plt.savefig(f'tmp/example_{idx}.png')
-            break
-            if idx > 10:
-                break
+            center, points = alg.run(df)
+            df
 
