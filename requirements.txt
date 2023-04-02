@@ -6,7 +6,11 @@ scikit-spatial
 tqdm
 
 torch==1.13.0
-numba
-torch_scatter
+# numba
+# torch_scatter
 
 psycopg2-binary
+lightning
+# wandb
+ray_lightning
+# spconv-cu117 # https://github.com/traveller59/spconv
