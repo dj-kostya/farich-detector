@@ -4,6 +4,11 @@ dataset/*.csv
 dataset/*.root
 .virtual_documents
 .ipynb_checkpoints
+*__pycache__
 tmp/*.png
 pg_data
 .env
+*.pt
+lightning_logs
+wandb
+.vscode

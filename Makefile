@@ -12,3 +12,7 @@ setup_venv:
 
 build: setup_venv download_root_file
 	echo "Use venv: source .venv/bin/activate"
+
+
+clear: 
+	rm -rf dataset/graph_prew/*/processed
