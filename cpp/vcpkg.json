@@ -1,0 +1,19 @@
+{
+  "name" : "detector-cpp",
+  "version-string" : "1.0.0",
+  "builtin-baseline" : "cb1301e9977b5f10b49f7988f68b808f7a558970",
+  "dependencies" : [ {
+    "name" : "opencv",
+    "version>=" : "4.7.0#1"
+  }, {
+    "name" : "eigen3",
+    "version>=" : "3.4.0#2"
+  }, {
+    "name" : "dataframe",
+    "version>=" : "1.22.0",
+    "$comment" : "    # this is heuristically generated, and may not be correct\n\n    find_package(DataFrame CONFIG REQUIRED)\n\n    target_link_libraries(main PRIVATE DataFrame::DataFrame)\n"
+  }, {
+    "name" : "bshoshany-thread-pool",
+    "version>=" : "3.3.0"
+  } ]
+}
