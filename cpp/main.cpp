@@ -5,7 +5,6 @@
 #include <set>
 #include "src/geometry/Plane.h"
 #include "src/geometry/Ellipse.h"
-#include "BS_thread_pool.hpp"
 #include "src/filters/FilterByTime.h"
 #include "src/filters/FilterInPlane.h"
 #include "src/geometry/Point.h"
