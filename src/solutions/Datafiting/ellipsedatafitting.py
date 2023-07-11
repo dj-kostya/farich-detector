@@ -1,6 +1,6 @@
 import statistics
+from time import time
 from typing import Set, List
-
 import cv2
 import numpy as np
 import pandas as pd
@@ -56,9 +56,13 @@ class EllipseDataFitting(ISolution):
     def _ellipse_function(A, B, C, D, E):
         return np.vectorize(lambda x, y: A * x * x + B * x * y + C * y * y + D * x + E * y - 1)
 
-    def _get_points(self, df_input: pd.DataFrame):
-        points = df_input.apply(lambda point: Point([point.x_c, point.y_c, point.t_c]), axis=1).to_numpy()
+    @staticmethod
+    def point_cast(point):
+        return Point([point.x_c, point.y_c, point.t_c])
 
+    def _get_points(self, df_input: pd.DataFrame):
+        points = df_input.apply(self.point_cast, axis=1).to_numpy()
+        cache = set()
         for i1 in self.tqdm(range(len(points) - 2)):
             for i2 in range(i1 + 1, len(points) - 1):
                 for i3 in range(i2 + 1, len(points)):
@@ -67,25 +71,31 @@ class EllipseDataFitting(ISolution):
                     p3 = points[i3]
                     try:
                         plane, transf, inv_transf = get_plain_and_transform_by_3_points(p1, p2, p3)
-                    except ValueError as e:
+                    except ValueError:
                         continue
                     cur_points = []
                     not_projected = []
+                    indexes = {i1, i2, i3}
                     for i4, p4 in enumerate(points):
-                        # if i4 in [i1, i2, i3]:
-                        #     continue
+                        if i4 in indexes:
+                            continue
 
                         projected_p4 = plane.project_point(p4)
                         if np.abs(np.linalg.norm(projected_p4 - p4)) > self.eps_proj:
                             continue
                         not_projected.append(p4)
                         cur_points.append(np.array(projected_p4))
-
+                        indexes.add(i4)
+                    indexes = frozenset(indexes)
                     if len(cur_points) < self.minimal_points_in_plain:
                         continue
+                    if indexes in cache:
+                        continue
+                    cache.add(indexes)
                     cur_points = np.array(cur_points)
                     yield not_projected, cur_points, transf, inv_transf
 
+    # @njit
     def run(self, df_input: pd.DataFrame):
         ellipses: List[Ellipse] = []
         max_cur_points_in_plane = 0

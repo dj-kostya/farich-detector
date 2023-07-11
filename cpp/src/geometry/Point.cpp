@@ -20,4 +20,8 @@ void Point::transform_to_plane(const Plane &plane) {
     point_in_plane = plane.transformToPlane(point);
 }
 
+Point::Point(double x, double y, size_t index): index(index) {
+    point_in_plane = {x, y, 0};
+}
+
 Point::Point() = default;

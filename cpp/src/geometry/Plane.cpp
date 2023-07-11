@@ -53,3 +53,7 @@ Eigen::Vector3d Plane::transformToPlane(const Eigen::Vector3d &point) const{
 Eigen::Vector3d Plane::transformFromPlane(const Eigen::Vector3d &point) const{
     return T * point + centroid;
 }
+
+Plane::Plane() {
+
+}

@@ -76,6 +76,10 @@ Ellipse Ellipse::use_RANSAC(const std::vector<Point> &points, double threshold) 
     d = X(3);
     e = X(4);
 
+    auto is_ellipse = check_invariants(EllipseParams{a, b, c, d, e, 1});
+    if(!is_ellipse){
+        throw std::runtime_error("Not an ellipse =<");
+    }
     double delta = b * b - 4 * a * c;
     double xc = (2 * c * d - b * e) / delta;
     double yc = (2 * a * e - b * d) / delta;
@@ -126,9 +130,14 @@ Ellipse Ellipse::use_OPENCV(const std::vector<Point> &points, double threshold) 
               pow(y0 * sin(theta), 2)) / pow(A, 2) +
              (pow(x0 * sin(theta), 2) - 2 * x0 * y0 * cos(theta) * sin(theta) +
               pow(y0 * cos(theta), 2)) / pow(B, 2) - 1;
+
+    auto is_ellipse = check_invariants(EllipseParams{a, b, c, d, e, f});
+    if(!is_ellipse){
+        throw std::runtime_error("Not an ellipse =<");
+    }
     Eigen::Vector3d center = {x0, y0, 0};
     std::vector<Point> inliner;
-    double distance_sum = -9;
+    double distance_sum = 0;
     for (auto &p: points) {
         auto point = p.point_in_plane;
 //        double distance =
@@ -137,16 +146,86 @@ Ellipse Ellipse::use_OPENCV(const std::vector<Point> &points, double threshold) 
 //                pow(p.point_in_plane.y() - e, 2) * c;
         double distance = pow(point.x(), 2) * a +
                           point.x() * point.y() * b + pow(point.y(), 2) * c +
-                          point.x() * d + point.y() * e - f;
-        if (pow(distance, 2) <= threshold) {
+                          point.x() * d + point.y() * e + f;
+        double sq_error = pow(distance, 2);
+        if (sq_error <= threshold) {
             inliner.emplace_back(p);
-            distance_sum = fmax(pow(distance, 2), distance_sum);
+            distance_sum += sq_error;
         }
     }
-    distance_sum /= points.size();
+    distance_sum /= inliner.size();
     return {
             inliner,
             center,
             distance_sum
     };
+}
+
+Ellipse Ellipse::use_RANSAC_V2(const std::vector<Point> &points, double threshold) {
+    Eigen::MatrixXd A(points.size(), 6);
+    for (Eigen::Index i = 0; i < points.size(); ++i) {
+        double x = points[i].point_in_plane[0];
+        double y = points[i].point_in_plane[1];
+        A(i, 0) = x * x;
+        A(i, 1) = x * y;
+        A(i, 2) = y * y;
+        A(i, 3) = x;
+        A(i, 4) = y;
+        A(i, 5) = 1;
+    }
+    Eigen::MatrixXd S = A.transpose() * A;
+    Eigen::MatrixXd C(6, 6);
+    C(0, 2) = 2;
+    C(1, 1) = -1;
+    C(2, 0) = 2;
+//    Eigen::Matrix3Xd Z = ;
+    Eigen::EigenSolver<Eigen::MatrixXd> solver(S.inverse() * C);
+    Eigen::Matrix<double, 6, 1> eigen_value = solver.eigenvalues().real().eval();
+    Eigen::Matrix<double, 6, 6> eigen_vec = solver.eigenvectors().real().eval();
+    Eigen::Array<bool, 6, 1> mask = (eigen_value.array() > 0.0).eval() && !(eigen_value.array().isInf());
+
+    Eigen::MatrixXd a = eigen_vec.block(0, mask.count() - 1, eigen_vec.rows(), mask.count());
+    auto params = EllipseParams{a(0, 0), a(1, 0), a(2, 0), a(3, 0), a(4, 0), a(5, 0)};
+
+    auto center = get_center(params);
+    return Ellipse();
+}
+
+Eigen::Vector3d Ellipse::get_center(const EllipseParams &params) {
+    auto num = params.b * params.b - params.a * params.c;
+    auto x0 = (params.c * params.d - params.b * params.f) / num;
+    auto y0 = (params.a * params.f - params.b * params.d) / num;
+    Eigen::Vector3d center = {x0, y0, 0};
+    return center;
+}
+
+bool Ellipse::check_invariants(const EllipseParams &params) {
+
+    double I1 = params.a + params.c;
+
+    Eigen::Matrix<double, 2, 2> I2;
+    I2(0, 0) = params.a;
+    I2(0, 1) = params.b / 2;
+    I2(1, 0) = params.b / 2;
+    I2(1, 1) = params.c;
+
+    if (I2.determinant() <= 0) {
+        return false;
+    }
+
+    Eigen::Matrix<double, 3, 3> I3;
+    I3(0, 0) = params.a;
+    I3(0, 1) = params.b / 2;
+    I3(0, 2) = params.d;
+    I3(1, 0) = params.b / 2;
+    I3(1, 1) = params.c;
+    I3(1, 2) = params.e;
+    I3(2, 0) = params.d;
+    I3(2, 1) = params.e;
+    I3(2, 2) = params.f;
+
+    if (I1 * I3.determinant() < 0) {
+        return true;
+    }
+    return false;
 }

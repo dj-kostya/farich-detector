@@ -15,5 +15,12 @@
   }, {
     "name" : "bshoshany-thread-pool",
     "version>=" : "3.3.0"
+  }, {
+    "name" : "rapidcsv",
+    "version>=" : "8.64"
+  }, {
+    "name" : "spdlog",
+    "version>=" : "1.11.0",
+    "$comment" : "    # this is heuristically generated, and may not be correct\n\n    find_package(spdlog CONFIG REQUIRED)\n\n    target_link_libraries(main PRIVATE spdlog::spdlog spdlog::spdlog_header_only)\n"
   } ]
 }

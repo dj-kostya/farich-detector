@@ -12,3 +12,10 @@ setup_venv:
 
 build: setup_venv download_root_file
 	echo "Use venv: source .venv/bin/activate"
+
+generate_el:
+	@.venv/bin/python src/generators/generate_ellipse.py
+	@rm cpp/cmake-build-release/ellipse_samples/*
+	@rm cpp/cmake-build-debug/ellipse_samples/*
+	@cp dataset/examples/*.csv cpp/cmake-build-release/ellipse_samples
+	@cp dataset/examples/*.csv cpp/cmake-build-debug/ellipse_samples

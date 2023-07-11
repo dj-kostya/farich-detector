@@ -22,6 +22,8 @@ public:
     [[nodiscard]] Eigen::Vector3d transformToPlane(const Eigen::Vector3d &point) const;
 
     [[nodiscard]] Eigen::Vector3d transformFromPlane(const Eigen::Vector3d &point) const;
+
+    Plane();
 };
 
 

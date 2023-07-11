@@ -1,10 +1,10 @@
 import numpy as np
-from skspatial.objects import Plane
+from skspatial.objects import Plane, Point
 # from collections.abc import Callable
 from typing import Tuple
 
 
-def get_plain_and_transform_by_3_points(point1, point2, point3) -> \
+def get_plain_and_transform_by_3_points(point1: Point, point2: Point, point3: Point) -> \
         Tuple[Plane, any, any]:
     """
     Fit plane from three points

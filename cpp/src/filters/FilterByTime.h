@@ -9,19 +9,26 @@
 #include "IFilter.h"
 
 
-class FilterByTime: public IFilter {
+class FilterByTime : public IFilter {
 private:
+    std::string filename = "FilterByTime";
     double windowSize;
     double tStep;
 
     static size_t _process_window(const UIntDataFrame &df, double from_t, double to_t);
+
     std::pair<double, double> _find_max_window(const UIntDataFrame &df, double max_t);
+
 public:
     FilterByTime(double windowSize, double tStep);
 
     UIntDataFrame process(const UIntDataFrame &df) override;
 
     static double get_max_t(const UIntDataFrame &df);
+
+    std::string &get_name() override {
+        return filename;
+    }
 };
 
 

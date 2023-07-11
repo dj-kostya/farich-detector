@@ -13,6 +13,8 @@ using UIntDataFrame = StdDataFrame<uint>;
 class IFilter {
 public:
     virtual UIntDataFrame process(const UIntDataFrame &df) = 0;
+
+    virtual std::string &get_name() = 0;
 };
 
 #endif //DETECTOR_CPP_IFILTER_H

@@ -20,6 +20,8 @@ public:
 
     Point();
 
+    Point(double x, double y, size_t index);
+
     explicit Point(Eigen::Vector3d point, size_t index);
 
     void project_to_plane(const Plane &plane);

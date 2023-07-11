@@ -9,8 +9,10 @@
 #include "IFilter.h"
 
 
-class FilterInPlane: public IFilter {
+class FilterInPlane : public IFilter {
 private:
+    std::string filename = "FilterInPlane";
+
     uint windowSize;
     uint dStep;
 
@@ -24,6 +26,10 @@ public:
     FilterInPlane(uint windowSize, uint dStep);
 
     UIntDataFrame process(const UIntDataFrame &df) override;
+
+    std::string &get_name() override{
+        return filename;
+    }
 };
 
 
